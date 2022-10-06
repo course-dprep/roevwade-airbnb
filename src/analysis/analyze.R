@@ -1,11 +1,21 @@
-# load 
-load("./gen/analysis/input/data_cleaned.RData")
+# Analysing the Data #
 
-# Estimate model 1 
-m1 <- lm(V1 ~ V3 + V4,df_cleaned)
+# Load the final merged data 
+load("./gen/temp/combined_data1")
 
-# Estimate model 2 
-m2 <- lm(V1 ~ V3 + V4 + V5 , df_cleaned)
+# Create an interaction between time and category1. We will call this interaction 'did'
+combined_data1$did <- combined_data1$time * combined_data1$category1
 
-# Save results
-save(m1,m2,file="./gen/analysis/output/model_results.RData")
+# Estimate the DID estimator
+didreg = lm(price ~ category1 + time + did, data = combined_data1)
+summary(didreg)
+
+# Estimate the DID estimator
+didreg1 = lm(price ~ category1*time, data = combined_data1)
+summary(didreg1)
+
+
+# Calculate the mean prices before the overturning
+mean_price_before_legal <- combined_data1 %>% filter(time == 0 & category1 == 0) %>% mean(combined_data1$price)
+
+# Calculate the mean prices after the overturning
